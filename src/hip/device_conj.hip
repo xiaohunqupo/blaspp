@@ -1,76 +1,109 @@
 #include "blas/device.hh"
-#include <hip/hip_complex.h>
+#include "operators.hip.h"
 
 #if defined(BLAS_HAVE_ROCBLAS)
 
 namespace blas {
 
-__device__ std::complex<float> conj_convert(
-    std::complex<float> z)
-{
-    hipFloatComplex res = hipConjf(*(hipFloatComplex*) &z);
-    return *(std::complex<float>*) &res;
-}
-
-__device__ std::complex<double> conj_convert(
-    std::complex<double> z)
-{
-    hipDoubleComplex res = hipConj(*(hipDoubleComplex*) &z);
-    return *(std::complex<double>*) &res;
-}
-
-template <typename TS, typename TD>
+// Each thread conjugates 1 item
+template <typename scalar_t>
 __global__ void conj_kernel(
     int64_t n,
-    TS const* src, int64_t inc_src, int64_t i_src,
-    TD* dst, int64_t inc_dst, int64_t i_dst)
+    scalar_t const* x, int64_t incx, int64_t ix,
+    scalar_t*       y, int64_t incy, int64_t iy)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < n)
-        dst[ i*inc_dst + i_dst ] = conj_convert( src[ i*inc_src + i_src ] );
+        y[ i*incy + iy ] = conj_device( x[ i*incx + ix ] );
 }
 
-template <typename TS, typename TD>
+//------------------------------------------------------------------------------
+/// Conjugates each element of the vector x and stores in y.
+///
+/// @param[in] n
+///     Number of elements in the vector. n >= 0.
+///
+/// @param[in] x
+///     Pointer to the input vector of length n.
+///
+/// @param[in] incx
+///     Stride between elements of x. incx >= 1.
+///
+/// @param[out] y
+///     Pointer to output vector
+///     On exit, each element y[i] is updated as y[i] = conj( x[i] ).
+///     y may be the same as x.
+///
+/// @param[in] incy
+///     Stride between elements of y. incy >= 1.
+///
+/// @param[in] queue
+///     BLAS++ queue to execute in.
+///
+template <typename scalar_t>
 void conj(
     int64_t n,
-    TS const* src, int64_t inc_src,
-    TD* dst, int64_t inc_dst,
+    scalar_t const* x, int64_t incx,
+    scalar_t*       y, int64_t incy,
     blas::Queue& queue )
 {
-    if (n <= 0) {
+    blas_error_if( n < 0 );
+    blas_error_if( incx == 0 );
+    blas_error_if( incy == 0 );
+
+    if (n == 0)
         return;
-    }
 
-    const int BlockSize = 128;
+    const int64_t BlockSize = 1024;
 
-    int64_t n_threads = std::min( int64_t( BlockSize ), n );
+    int64_t n_threads = min( BlockSize, n );
     int64_t n_blocks = ceildiv(n, n_threads);
 
-    int64_t i_src = (inc_src > 0 ? 0 : (1 - n) * inc_src);
-    int64_t i_dst = (inc_dst > 0 ? 0 : (1 - n) * inc_dst);
+    int64_t ix = (incx > 0 ? 0 : (1 - n) * incx);
+    int64_t iy = (incy > 0 ? 0 : (1 - n) * incy);
 
-    blas_dev_call(
-        hipSetDevice( queue.device() ) );
+    blas_dev_call( hipSetDevice( queue.device() ) );
 
+    if constexpr (std::is_same_v<scalar_t, std::complex<float>>) {
+        conj_kernel<hipComplex><<<n_blocks, n_threads, 0, queue.stream()>>>(
+            n, (hipComplex*) x, incx, ix, (hipComplex*) y, incy, iy );
+    }
+    else if constexpr (std::is_same_v<scalar_t, std::complex<double>>) {
+        conj_kernel<hipDoubleComplex><<<n_blocks, n_threads, 0, queue.stream()>>>(
+            n, (hipDoubleComplex*) x, incx, ix, (hipDoubleComplex*) y, incy, iy );
+    }
+    else {
     conj_kernel<<<n_blocks, n_threads, 0, queue.stream()>>>(
-        n, src, inc_src, i_src, dst, inc_dst, i_dst );
+        n, x, incx, ix, y, incy, iy );
+    }
 
-    blas_dev_call(
-        hipGetLastError() );
+    blas_dev_call( hipGetLastError() );
 }
 
 //------------------------------------------------------------------------------
 // Explicit instantiations.
 template void conj(
     int64_t n,
-    std::complex<float> const* src, int64_t inc_src,
-    std::complex<float>* dst, int64_t inc_dst,
+    float const* x, int64_t incx,
+    float* y, int64_t incy,
     blas::Queue& queue);
 
 template void conj(
     int64_t n,
-    std::complex<double> const* src, int64_t inc_src,
-    std::complex<double>* dst, int64_t inc_dst,
+    double const* x, int64_t incx,
+    double* y, int64_t incy,
+    blas::Queue& queue);
+
+template void conj(
+    int64_t n,
+    std::complex<float> const* x, int64_t incx,
+    std::complex<float>* y, int64_t incy,
+    blas::Queue& queue);
+
+template void conj(
+    int64_t n,
+    std::complex<double> const* x, int64_t incx,
+    std::complex<double>* y, int64_t incy,
     blas::Queue& queue);
 
 } // namespace blas

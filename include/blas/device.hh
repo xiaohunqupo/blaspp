@@ -703,34 +703,52 @@ void Queue::work_ensure_size( size_t lwork )
 template <typename scalar_t>
 void shift_vec( int64_t n, scalar_t* v, scalar_t c, blas::Queue& queue );
 
-template <typename TS, typename TD>
+template <typename scalar_t>
 void conj(
     int64_t n,
-    TS const* src, int64_t inc_src,
-    TD* dst, int64_t inc_dst,
+    scalar_t const* x, int64_t incx,
+    scalar_t*       y, int64_t incy,
     blas::Queue& queue );
+
+#ifndef BLAS_HAVE_DEVICE
+
+template <typename scalar_t>
+void conj(
+    int64_t n,
+    scalar_t const* x, int64_t incx,
+    scalar_t*       y, int64_t incy,
+    blas::Queue& queue )
+{
+    throw blas::Error( "device BLAS not available", __func__ );
+}
+
+#endif
 
 #if defined(BLAS_HAVE_SYCL)
 
-template <typename TS, typename TD>
+template <typename scalar_t>
 void conj(
     int64_t n,
-    TS const* src, int64_t inc_src,
-    TD* dst, int64_t inc_dst,
+    scalar_t const* x, int64_t incx,
+    scalar_t*       y, int64_t incy,
     blas::Queue& queue )
 {
-    using std::conj;
+    using blas::conj;
+    using std::max, std::min;
 
-    if (n <= 0) {
+    blas_error_if( n < 0 );
+    blas_error_if( incx == 0 );
+    blas_error_if( incy == 0 );
+
+    if (n == 0)
         return;
-    }
 
-    int64_t i_src = (inc_src > 0 ? 0 : (1 - n) * inc_src);
-    int64_t i_dst = (inc_dst > 0 ? 0 : (1 - n) * inc_dst);
+    int64_t ix = (incx > 0 ? 0 : (1 - n) * incx);
+    int64_t iy = (incy > 0 ? 0 : (1 - n) * incy);
 
     queue.stream().submit( [&]( sycl::handler& h ) {
         h.parallel_for( sycl::range<1>(n), [=]( sycl::id<1> i ) {
-            dst[ i*inc_dst + i_dst ] = conj( src[ i*inc_src + i_src ] );
+            y[ i*incy + iy ] = conj( x[ i*incx + ix ] );
         } );
     } );
 }
