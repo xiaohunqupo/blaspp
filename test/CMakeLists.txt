@@ -131,6 +131,9 @@ add_executable(
     test_trmv_device.cc
     test_trsm_device.cc
     test_trsv_device.cc
+    test_conj_device.cc
+    test_geadd_device.cc
+    test_tzadd_device.cc
 )
 
 # C++11 is inherited from blaspp, but disabling extensions is not.
