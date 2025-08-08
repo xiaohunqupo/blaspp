@@ -755,6 +755,210 @@ void conj(
 
 #endif // BLAS_HAVE_SYCL
 
+template <typename scalar_t>
+void geadd(
+    blas::Layout layout,
+    blas::Op trans,
+    int64_t m, int64_t n,
+    scalar_t alpha, scalar_t const* A, int64_t lda,
+    scalar_t beta,  scalar_t*       B, int64_t ldb,
+    blas::Queue& queue );
+
+#ifndef BLAS_HAVE_DEVICE
+
+template <typename scalar_t>
+void geadd(
+    blas::Layout layout,
+    blas::Op trans,
+    int64_t m, int64_t n,
+    scalar_t alpha, scalar_t const* A, int64_t lda,
+    scalar_t beta,  scalar_t*       B, int64_t ldb,
+    blas::Queue& queue )
+{
+    throw blas::Error( "device BLAS not available", __func__ );
+}
+
+#endif
+
+#if defined(BLAS_HAVE_SYCL)
+
+template <typename scalar_t>
+void geadd(
+    blas::Layout layout,
+    blas::Op trans,
+    int64_t m, int64_t n,
+    scalar_t alpha, scalar_t const* A, int64_t lda,
+    scalar_t beta,  scalar_t*       B, int64_t ldb,
+    blas::Queue& queue )
+{
+    using blas::conj;
+    using blas::max, blas::min;
+
+    blas_error_if( layout != Layout::ColMajor &&
+                   layout != Layout::RowMajor );
+    blas_error_if( trans != Op::NoTrans &&
+                   trans != Op::Trans &&
+                   trans != Op::ConjTrans );
+    blas_error_if( m < 0 );
+    blas_error_if( n < 0 );
+
+    if (layout == Layout::ColMajor) {
+        if (trans == Op::NoTrans)
+            blas_error_if( lda < m );
+        else
+            blas_error_if( lda < n );
+
+        blas_error_if( ldb < m );
+    }
+    else {
+        if (trans == Op::NoTrans)
+            blas_error_if( lda < n );
+        else
+            blas_error_if( lda < m );
+
+        blas_error_if( ldb < n );
+    }
+
+    if (m == 0 || n == 0)
+        return;
+
+    if (layout == Layout::RowMajor) {
+        std::swap(m, n);
+    }
+
+    const int64_t Block_x = 32;
+    const int64_t Block_y = 32;
+
+    sycl::range<2> threads( min( Block_x, m ), min( Block_y, n ) );
+    sycl::range<2> blocks( ceildiv( m, Block_x ), ceildiv( n, Block_y ) );
+
+    queue.stream().submit( [&]( sycl::handler& h ) {
+        h.parallel_for( sycl::nd_range<2>( blocks * threads, threads ), [=]( sycl::nd_item<2> item ) {
+            int64_t i = item.get_global_id(0);
+            int64_t j = item.get_global_id(1);
+
+            if (i < m && j < n) {
+                scalar_t A_op;
+                switch (trans) {
+                    case Op::NoTrans:   A_op = A[ i + j*lda ]; break;
+                    case Op::Trans:     A_op = A[ j + i*lda ]; break;
+                    case Op::ConjTrans: A_op = conj( A[ j + i*lda ] ); break;
+                    default: return; // Invalid operation
+                }
+                B[ i + j*ldb ] = beta * B[ i + j*ldb ] + alpha * A_op;
+            }
+        } );
+    } );
+}
+
+#endif // BLAS_HAVE_SYCL
+
+template <typename scalar_t>
+void tzadd(
+    blas::Layout layout,
+    blas::Uplo uplo,
+    blas::Op trans,
+    int64_t m, int64_t n,
+    scalar_t alpha, scalar_t const* A, int64_t lda,
+    scalar_t beta,  scalar_t*       B, int64_t ldb,
+    blas::Queue& queue );
+
+#ifndef BLAS_HAVE_DEVICE
+
+template <typename scalar_t>
+void tzadd(
+    blas::Layout layout,
+    blas::Uplo uplo,
+    blas::Op trans,
+    int64_t m, int64_t n,
+    scalar_t alpha, scalar_t const* A, int64_t lda,
+    scalar_t beta,  scalar_t*       B, int64_t ldb,
+    blas::Queue& queue )
+{
+    throw blas::Error( "device BLAS not available", __func__ );
+}
+
+#endif
+
+#if defined(BLAS_HAVE_SYCL)
+
+template <typename scalar_t>
+void tzadd(
+    blas::Layout layout,
+    blas::Uplo uplo,
+    blas::Op trans,
+    int64_t m, int64_t n,
+    scalar_t alpha, scalar_t const* A, int64_t lda,
+    scalar_t beta,  scalar_t*       B, int64_t ldb,
+    blas::Queue& queue )
+{
+    using blas::conj;
+    using blas::max, blas::min;
+
+    blas_error_if( layout != Layout::ColMajor &&
+                   layout != Layout::RowMajor );
+    blas_error_if( uplo != Uplo::Lower &&
+                   uplo != Uplo::Upper );
+    blas_error_if( trans != Op::NoTrans &&
+                   trans != Op::Trans &&
+                   trans != Op::ConjTrans );
+    blas_error_if( m < 0 );
+    blas_error_if( n < 0 );
+
+    if (layout == Layout::ColMajor) {
+        if (trans == Op::NoTrans)
+            blas_error_if( lda < m );
+        else
+            blas_error_if( lda < n );
+
+        blas_error_if( ldb < m );
+    }
+    else {
+        if (trans == Op::NoTrans)
+            blas_error_if( lda < n );
+        else
+            blas_error_if( lda < m );
+
+        blas_error_if( ldb < n );
+    }
+
+    if (m == 0 || n == 0)
+        return;
+
+    if (layout == Layout::RowMajor) {
+        std::swap(m, n);
+    }
+
+    const int64_t Block_x = 32;
+    const int64_t Block_y = 32;
+
+    sycl::range<2> threads( min( Block_x, m ), min( Block_y, n ) );
+    sycl::range<2> blocks( ceildiv( m, Block_x ), ceildiv( n, Block_y ) );
+
+    queue.stream().submit( [&]( sycl::handler& h ) {
+        h.parallel_for( sycl::nd_range<2>( blocks * threads, threads ), [=]( sycl::nd_item<2> item ) {
+            int64_t i = item.get_global_id(0);
+            int64_t j = item.get_global_id(1);
+
+            int64_t j_lower = (uplo == Uplo::Lower ? 0 : max( 0, i - max( 0, m - n ) ));
+            int64_t j_upper = (uplo == Uplo::Upper ? n : min( n, i + 1 ));
+
+            if (i < m && j >= j_lower && j < j_upper) {
+                scalar_t A_op;
+                switch (trans) {
+                    case Op::NoTrans:   A_op = A[ i + j*lda ]; break;
+                    case Op::Trans:     A_op = A[ j + i*lda ]; break;
+                    case Op::ConjTrans: A_op = conj( A[ j + i*lda ] ); break;
+                    default: return; // Invalid operation
+                }
+                B[ i + j*ldb ] = beta * B[ i + j*ldb ] + alpha * A_op;
+            }
+        } );
+    } );
+}
+
+#endif // BLAS_HAVE_SYCL
+
 }  // namespace blas
 
 #endif        //  #ifndef BLAS_DEVICE_HH

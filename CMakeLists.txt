@@ -400,8 +400,10 @@ if (CUDAToolkit_FOUND)
     target_sources(
         blaspp
         PRIVATE
-        src/cuda/device_shift_vec.cu
         src/cuda/device_conj.cu
+        src/cuda/device_geadd.cu
+        src/cuda/device_shift_vec.cu
+        src/cuda/device_tzadd.cu
     )
     # Some platforms need these to be public libraries.
     target_link_libraries(
@@ -410,8 +412,10 @@ elseif (rocblas_FOUND)
     target_sources(
         blaspp
         PRIVATE
-        src/hip/device_shift_vec.hip
         src/hip/device_conj.hip
+        src/hip/device_geadd.hip
+        src/hip/device_shift_vec.hip
+        src/hip/device_tzadd.hip
     )
     # Some platforms need these to be public libraries.
     target_link_libraries(
