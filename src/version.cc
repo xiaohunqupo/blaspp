@@ -17,7 +17,7 @@ int blaspp_version()
     return BLASPP_VERSION;
 }
 
-// BLASPP_ID is the Mercurial or git commit hash ID, either
+// BLASPP_ID is the git commit hash ID, either
 // defined by `git rev-parse --short HEAD` in Makefile,
 // or defined here by make_release.py for release tar files. DO NOT EDIT.
 #ifndef BLASPP_ID
@@ -25,7 +25,7 @@ int blaspp_version()
 #endif
 
 //------------------------------------------------------------------------------
-/// @return BLAS++ Mercurial or git commit hash ID.
+/// @return BLAS++ git commit hash ID.
 ///
 const char* blaspp_id()
 {

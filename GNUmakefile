@@ -166,7 +166,7 @@ endif
 ${lib_obj} ${tester_obj}: | ${testsweeper}
 
 #-------------------------------------------------------------------------------
-# Get Mercurial id, and make version.o depend on it via .id file.
+# Look up git commit id, and make version.o depend on it via .id file.
 
 ifneq (${wildcard .git},)
     id := ${shell git rev-parse --short HEAD}
