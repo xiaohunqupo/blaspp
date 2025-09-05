@@ -21,14 +21,14 @@ void cpu_tzadd(
 {
     using blas::conj;
     using blas::Layout, blas::Uplo, blas::Op;
-    using std::max, std::min;
+    using blas::max, blas::min;
 
     if (layout == Layout::RowMajor) {
         std::swap( m, n );
     }
 
     for (int64_t i = 0; i < m; ++i) {
-        int64_t j_lower = (uplo == Uplo::Lower ? 0 : max( 0L, i - max( 0L, m - n ) ));
+        int64_t j_lower = (uplo == Uplo::Lower ? 0 : max( 0, i - max( 0, m - n ) ));
         int64_t j_upper = (uplo == Uplo::Upper ? n : min( n, i + 1 ));
         for (int64_t j = j_lower; j < j_upper; ++j) {
             scalar_t A_op;
