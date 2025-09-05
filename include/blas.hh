@@ -14,6 +14,8 @@
 // Version 2025.05.28
 #define BLASPP_VERSION 20250528
 
+/// @namespace blas
+/// BLAS (Basic Linear Algebra Subroutines)
 namespace blas {
 
 int blaspp_version();

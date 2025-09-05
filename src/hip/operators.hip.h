@@ -10,59 +10,73 @@
 
 namespace blas {
 
-// max
-__device__ inline int64_t max_device(int64_t x, int64_t y)
+//------------------------------------------------------------------------------
+/// @return max( x, y )
+__device__
+inline int64_t max_device( int64_t x, int64_t y )
 {
     return (x > y) ? x : y;
 }
 
-// min
-__device__ inline int64_t min_device(int64_t x, int64_t y)
+//------------------------------------------------------------------------------
+/// @return min( x, y )
+__device__
+inline int64_t min_device( int64_t x, int64_t y )
 {
     return (x < y) ? x : y;
 }
 
-// conj_device
-__device__ inline float conj_device(float x)
+//------------------------------------------------------------------------------
+/// @return conj( x ). For non-complex types, returns x.
+template <typename T, typename = std::enable_if_t< std::is_arithmetic_t<T> > >
+__device__
+inline T conj_device( T x )
 {
     return x;
 }
 
-__device__ inline double conj_device(double x)
+/// @return conj( x ).
+__device__
+inline hipFloatComplex conj_device( hipFloatComplex z )
 {
-    return x;
+    return hipConjf( z );
 }
 
-__device__ inline hipFloatComplex conj_device(hipFloatComplex z)
+/// @return conj( x ).
+__device__
+inline hipDoubleComplex conj_device( hipDoubleComplex z )
 {
-    return hipConjf(z);
+    return hipConj( z );
 }
 
-__device__ inline hipDoubleComplex conj_device(hipDoubleComplex z)
+//------------------------------------------------------------------------------
+/// @return x + y
+__device__
+inline hipFloatComplex operator + ( hipFloatComplex x, hipFloatComplex y )
 {
-    return hipConj(z);
+    return hipCaddf( x, y );
 }
 
-// operator +
-__device__ inline hipFloatComplex operator +(hipFloatComplex x, hipFloatComplex y)
+/// @return x + y
+__device__
+inline hipDoubleComplex operator + ( hipDoubleComplex x, hipDoubleComplex y )
 {
-    return hipCaddf(x, y);
+    return hipCadd( x, y );
 }
 
-__device__ inline hipDoubleComplex operator +(hipDoubleComplex x, hipDoubleComplex y)
+//------------------------------------------------------------------------------
+/// @return x * y
+__device__
+inline hipFloatComplex operator * ( hipFloatComplex x, hipFloatComplex y )
 {
-    return hipCadd(x, y);
+    return hipCmulf( x, y );
 }
 
-// operator *
-__device__ inline hipFloatComplex operator *(hipFloatComplex x, hipFloatComplex y)
+/// @return x * y
+__device__
+inline hipDoubleComplex operator * ( hipDoubleComplex x, hipDoubleComplex y )
 {
-    return hipCmulf(x, y);
-}
-
-__device__ inline hipDoubleComplex operator *(hipDoubleComplex x, hipDoubleComplex y)
-{
-    return hipCmul(x, y);
+    return hipCmul( x, y );
 }
 
 }  // namespace blas

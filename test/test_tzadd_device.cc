@@ -9,6 +9,7 @@
 #include "print_matrix.hh"
 #include "blas/device.hh"
 
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void cpu_tzadd(
     blas::Layout layout,
@@ -23,9 +24,8 @@ void cpu_tzadd(
     using std::max, std::min;
 
     if (layout == Layout::RowMajor) {
-        std::swap(m, n);
+        std::swap( m, n );
     }
-
 
     for (int64_t i = 0; i < m; ++i) {
         int64_t j_lower = (uplo == Uplo::Lower ? 0 : max( 0L, i - max( 0L, m - n ) ));
@@ -43,7 +43,7 @@ void cpu_tzadd(
     }
 }
 
-// -----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void test_tzadd_device_work( Params& params, bool run )
 {
@@ -174,8 +174,9 @@ void test_tzadd_device_work( Params& params, bool run )
         real_t error = 0;
         for (int i = 0; i < Bm; ++i)
             for (int j = 0; j < Bn; ++j) {
-                real_t error_ij = std::abs(B[i + j*ldb] - Bref[i + j*ldb]) / std::abs(Bref[i + j*ldb]);
-                error = max(error, error_ij);
+                real_t error_ij = std::abs( B[i + j*ldb] - Bref[i + j*ldb] )
+                                / std::abs( Bref[i + j*ldb] );
+                error = max( error, error_ij );
             }
 
         // complex needs extra factor; see Higham, 2002, sec. 3.6.
@@ -199,7 +200,7 @@ void test_tzadd_device_work( Params& params, bool run )
     blas::device_free( dB, queue );
 }
 
-// -----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void test_tzadd_device( Params& params, bool run )
 {
     switch (params.datatype()) {

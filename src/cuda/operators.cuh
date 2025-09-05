@@ -10,59 +10,73 @@
 
 namespace blas {
 
-// max
-__device__ inline int64_t max_device(int64_t x, int64_t y)
+//------------------------------------------------------------------------------
+/// @return max( x, y )
+__device__
+inline int64_t max_device( int64_t x, int64_t y )
 {
     return (x > y) ? x : y;
 }
 
-// min
-__device__ inline int64_t min_device(int64_t x, int64_t y)
+//------------------------------------------------------------------------------
+/// @return min( x, y )
+__device__
+inline int64_t min_device( int64_t x, int64_t y )
 {
     return (x < y) ? x : y;
 }
 
-// conj_device
-__device__ inline float conj_device(float x)
+//------------------------------------------------------------------------------
+/// @return conj( x ). For non-complex types, returns x.
+template <typename T, typename = std::enable_if_t< std::is_arithmetic_t<T> > >
+__device__
+inline T conj_device( T x )
 {
     return x;
 }
 
-__device__ inline double conj_device(double x)
+/// @return conj( x ).
+__device__
+inline cuFloatComplex conj_device( cuFloatComplex z )
 {
-    return x;
+    return cuConjf( z );
 }
 
-__device__ inline cuComplex conj_device(cuComplex z)
+/// @return conj( x ).
+__device__
+inline cuDoubleComplex conj_device( cuDoubleComplex z )
 {
-    return cuConjf(z);
+    return cuConj( z );
 }
 
-__device__ inline cuDoubleComplex conj_device(cuDoubleComplex z)
+//------------------------------------------------------------------------------
+/// @return x + y
+__device__
+inline cuFloatComplex operator + ( cuFloatComplex x, cuFloatComplex y )
 {
-    return cuConj(z);
+    return cuCaddf( x, y );
 }
 
-// operator +
-__device__ inline cuComplex operator +(cuComplex x, cuComplex y)
+/// @return x + y
+__device__
+inline cuDoubleComplex operator + ( cuDoubleComplex x, cuDoubleComplex y )
 {
-    return cuCaddf(x, y);
+    return cuCadd( x, y );
 }
 
-__device__ inline cuDoubleComplex operator +(cuDoubleComplex x, cuDoubleComplex y)
+//------------------------------------------------------------------------------
+/// @return x * y
+__device__
+inline cuFloatComplex operator * ( cuFloatComplex x, cuFloatComplex y )
 {
-    return cuCadd(x, y);
+    return cuCmulf( x, y );
 }
 
-// operator *
-__device__ inline cuComplex operator *(cuComplex x, cuComplex y)
+/// @return x * y
+__device__
+inline cuDoubleComplex operator * ( cuDoubleComplex x, cuDoubleComplex y )
 {
-    return cuCmulf(x, y);
-}
-
-__device__ inline cuDoubleComplex operator *(cuDoubleComplex x, cuDoubleComplex y)
-{
-    return cuCmul(x, y);
+    return cuCmul( x, y );
 }
 
 }  // namespace blas

@@ -5,7 +5,8 @@
 
 namespace blas {
 
-// Each thread conjugates 1 item
+//------------------------------------------------------------------------------
+// Each thread conjugates 1 item.
 template <typename scalar_t>
 __global__ void conj_kernel(
     int64_t n,
@@ -24,18 +25,20 @@ __global__ void conj_kernel(
 ///     Number of elements in the vector. n >= 0.
 ///
 /// @param[in] x
-///     Pointer to the input vector of length n.
+///     The n-element vector x, in an array of length (n-1)*abs(incx) + 1.
 ///
 /// @param[in] incx
-///     Stride between elements of x. incx >= 1.
+///     Stride between elements of x. incx != 0.
+///     If incx < 0, uses elements of x in reverse order: x(n-1), ..., x(0).
 ///
-/// @param[out] y
-///     Pointer to output vector
+/// @param[in,out] y
+///     The n-element vector y, in an array of length (n-1)*abs(incy) + 1.
 ///     On exit, each element y[i] is updated as y[i] = conj( x[i] ).
 ///     y may be the same as x.
 ///
 /// @param[in] incy
-///     Stride between elements of y. incy >= 1.
+///     Stride between elements of y. incy != 0.
+///     If incy < 0, uses elements of y in reverse order: y(n-1), ..., y(0).
 ///
 /// @param[in] queue
 ///     BLAS++ queue to execute in.

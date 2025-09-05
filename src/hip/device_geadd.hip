@@ -5,7 +5,8 @@
 
 namespace blas {
 
-// Each thread adds 1 item
+//------------------------------------------------------------------------------
+// Each thread adds 1 item.
 template <typename scalar_t>
 __global__ void geadd_kernel(
     blas::Op trans,
@@ -16,7 +17,7 @@ __global__ void geadd_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x; // row
     int j = blockIdx.y * blockDim.y + threadIdx.y; // column
 
-    // Assume matrices are column major. Row major is handled in driver
+    // Assume matrices are column major. Row major is handled in driver.
     if (i < m && j < n) {
         scalar_t A_op;
         switch (trans) {

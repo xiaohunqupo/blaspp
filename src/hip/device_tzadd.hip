@@ -5,7 +5,8 @@
 
 namespace blas {
 
-// Each thread adds 1 item
+//------------------------------------------------------------------------------
+// Each thread adds 1 item.
 template <typename scalar_t>
 __global__ void tzadd_kernel(
     blas::Uplo uplo,
@@ -17,7 +18,7 @@ __global__ void tzadd_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x; // row
     int j = blockIdx.y * blockDim.y + threadIdx.y; // column
 
-    // Assume matrices are column major. Row major is handled in drive
+    // Assume matrices are column major. Row major is handled in driver.
     int64_t j_lower = (uplo == Uplo::Lower ? 0 : max_device( 0, i - max_device( 0, m - n ) ));
     int64_t j_upper = (uplo == Uplo::Upper ? n : min_device( n, i + 1 ));
 

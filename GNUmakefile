@@ -296,7 +296,8 @@ check: tester
 #-------------------------------------------------------------------------------
 # headers
 # precompile headers to verify self-sufficiency
-headers     = ${wildcard include/blas.hh include/blas/*.h include/blas/*.hh test/*.hh}
+headers     = ${wildcard include/blas.hh include/blas/*.h include/blas/*.hh \
+                         test/*.hh src/*.h src/*.hh src/cuda/*.cuh src/hip/*.h}
 headers_gch = ${addsuffix .gch, ${basename ${headers}}}
 
 headers: ${headers_gch}

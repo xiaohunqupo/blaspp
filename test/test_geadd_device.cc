@@ -9,6 +9,7 @@
 #include "print_matrix.hh"
 #include "blas/device.hh"
 
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void cpu_geadd(
     blas::Layout layout,
@@ -21,27 +22,28 @@ void cpu_geadd(
     using blas::Layout, blas::Op;
 
     if (layout == Layout::RowMajor) {
-        std::swap(m, n);
+        std::swap( m, n );
     }
 
-    if (trans == Op::NoTrans)
+    if (trans == Op::NoTrans) {
         for (int i = 0; i < m; ++i)
             for (int j = 0; j < n; ++j)
                 B[ i + j*ldb ] = beta * B[ i + j*ldb ] + alpha * A[ i + j*lda ];
-
-    else if (trans == Op::Trans)
+    }
+    else if (trans == Op::Trans) {
         for (int i = 0; i < m; ++i)
             for (int j = 0; j < n; ++j)
                 B[ i + j*ldb ] = beta * B[ i + j*ldb ] + alpha * A[ j + i*lda ];
-
-    else if (trans == Op::ConjTrans)
+    }
+    else if (trans == Op::ConjTrans) {
         for (int i = 0; i < m; ++i)
             for (int j = 0; j < n; ++j)
                 B[ i + j*ldb ] = beta * B[ i + j*ldb ]
-                    + alpha * conj( A[ j + i*lda ] );
+                               + alpha * conj( A[ j + i*lda ] );
+    }
 }
 
-// -----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void test_geadd_device_work( Params& params, bool run )
 {
@@ -170,8 +172,9 @@ void test_geadd_device_work( Params& params, bool run )
         real_t error = 0;
         for (int i = 0; i < Bm; ++i)
             for (int j = 0; j < Bn; ++j) {
-                real_t error_ij = std::abs(B[i + j*ldb] - Bref[i + j*ldb]) / std::abs(Bref[i + j*ldb]);
-                error = max(error, error_ij);
+                real_t error_ij = std::abs( B[i + j*ldb] - Bref[i + j*ldb] )
+                                / std::abs( Bref[i + j*ldb] );
+                error = max( error, error_ij );
             }
 
         // complex needs extra factor; see Higham, 2002, sec. 3.6.
@@ -195,7 +198,7 @@ void test_geadd_device_work( Params& params, bool run )
     blas::device_free( dB, queue );
 }
 
-// -----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void test_geadd_device( Params& params, bool run )
 {
     switch (params.datatype()) {

@@ -10,6 +10,7 @@
 #include "print_matrix.hh"
 #include "blas/device.hh"
 
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void cpu_conj(
     int64_t n,
@@ -22,11 +23,11 @@ void cpu_conj(
     int64_t iy = (incy > 0 ? 0 : (1 - n) * incy);
 
     for (int i = 0; i < n; ++i) {
-        y[i * incy + iy] = conj(x[i * incx + ix]);
+        y[i * incy + iy] = conj( x[i * incx + ix] );
     }
 }
 
-// -----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void test_conj_device_work( Params& params, bool run )
 {
@@ -129,7 +130,7 @@ void test_conj_device_work( Params& params, bool run )
     blas::device_free( dy, queue );
 }
 
-// -----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void test_conj_device( Params& params, bool run )
 {
     switch (params.datatype()) {
