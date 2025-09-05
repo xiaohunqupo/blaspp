@@ -700,9 +700,11 @@ void Queue::work_ensure_size( size_t lwork )
     }
 }
 
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void shift_vec( int64_t n, scalar_t* v, scalar_t c, blas::Queue& queue );
 
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void conj(
     int64_t n,
@@ -712,6 +714,7 @@ void conj(
 
 #ifndef BLAS_HAVE_DEVICE
 
+//----------------------------------------
 template <typename scalar_t>
 void conj(
     int64_t n,
@@ -722,10 +725,9 @@ void conj(
     throw blas::Error( "device BLAS not available", __func__ );
 }
 
-#endif
+#elif defined(BLAS_HAVE_SYCL)
 
-#if defined(BLAS_HAVE_SYCL)
-
+//----------------------------------------
 template <typename scalar_t>
 void conj(
     int64_t n,
@@ -752,6 +754,7 @@ void conj(
 
 #endif // BLAS_HAVE_SYCL
 
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void geadd(
     blas::Layout layout,
@@ -763,6 +766,7 @@ void geadd(
 
 #ifndef BLAS_HAVE_DEVICE
 
+//----------------------------------------
 template <typename scalar_t>
 void geadd(
     blas::Layout layout,
@@ -775,10 +779,9 @@ void geadd(
     throw blas::Error( "device BLAS not available", __func__ );
 }
 
-#endif
+#elif defined(BLAS_HAVE_SYCL)
 
-#if defined(BLAS_HAVE_SYCL)
-
+//----------------------------------------
 template <typename scalar_t>
 void geadd(
     blas::Layout layout,
@@ -846,6 +849,7 @@ void geadd(
 
 #endif // BLAS_HAVE_SYCL
 
+//------------------------------------------------------------------------------
 template <typename scalar_t>
 void tzadd(
     blas::Layout layout,
@@ -858,6 +862,7 @@ void tzadd(
 
 #ifndef BLAS_HAVE_DEVICE
 
+//----------------------------------------
 template <typename scalar_t>
 void tzadd(
     blas::Layout layout,
@@ -871,10 +876,9 @@ void tzadd(
     throw blas::Error( "device BLAS not available", __func__ );
 }
 
-#endif
+#elif defined(BLAS_HAVE_SYCL)
 
-#if defined(BLAS_HAVE_SYCL)
-
+//----------------------------------------
 template <typename scalar_t>
 void tzadd(
     blas::Layout layout,
