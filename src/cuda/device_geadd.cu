@@ -90,6 +90,8 @@ void geadd(
     scalar_t beta,  scalar_t*       B, int64_t ldb,
     blas::Queue& queue )
 {
+    using dev_scalar_t = typename device_cast_traits< scalar_t >::type;
+
     blas_error_if( layout != Layout::ColMajor &&
                    layout != Layout::RowMajor );
     blas_error_if( trans != Op::NoTrans &&
@@ -130,23 +132,11 @@ void geadd(
 
     blas_dev_call( cudaSetDevice( queue.device() ) );
 
-    // Cast complex types to cuComplex or cuDoubleComplex
-    if constexpr (std::is_same_v<scalar_t, std::complex<float>>) {
-        geadd_kernel<cuComplex><<<blocks, threads, 0, queue.stream()>>>(
-            trans, m, n,
-            *((cuComplex*) &alpha), (cuComplex*) A, lda,
-            *((cuComplex*) &beta),  (cuComplex*) B, ldb );
-    }
-    else if constexpr (std::is_same_v<scalar_t, std::complex<double>>) {
-        geadd_kernel<cuDoubleComplex><<<blocks, threads, 0, queue.stream()>>>(
-            trans, m, n,
-            *((cuDoubleComplex*) &alpha), (cuDoubleComplex*) A, lda,
-            *((cuDoubleComplex*) &beta),  (cuDoubleComplex*) B, ldb );
-    }
-    else {
-        geadd_kernel<<<blocks, threads, 0, queue.stream()>>> (
-            trans, m, n, alpha, A, lda, beta, B, ldb );
-    }
+    // Cast complex types to cuFloatComplex or cuDoubleComplex
+    geadd_kernel<<<blocks, threads, 0, queue.stream()>>>(
+        trans, m, n,
+        *((dev_scalar_t*) &alpha), (dev_scalar_t*) A, lda,
+        *((dev_scalar_t*) &beta),  (dev_scalar_t*) B, ldb );
 
     blas_dev_call( cudaGetLastError() );
 }

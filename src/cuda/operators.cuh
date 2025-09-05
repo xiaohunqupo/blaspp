@@ -8,7 +8,33 @@
 
 #include "blas/device.hh"
 
+#include <type_traits>
+
 namespace blas {
+
+//------------------------------------------------------------------------------
+/// Map C++ type to CUDA type, e.g.:
+///     device_cast_traits< double               >::type == double
+///     device_cast_traits< std::complex<double> >::type == cuDoubleComplex
+///
+template <typename T>
+struct device_cast_traits
+{
+    using type = T;
+};
+
+// cuComplex and cuFloatComplex are aliases.
+template <>
+struct device_cast_traits< std::complex<float> >
+{
+    using type = cuFloatComplex;
+};
+
+template <>
+struct device_cast_traits< std::complex<double> >
+{
+    using type = cuDoubleComplex;
+};
 
 //------------------------------------------------------------------------------
 /// @return max( x, y )
@@ -28,7 +54,7 @@ inline int64_t min_device( int64_t x, int64_t y )
 
 //------------------------------------------------------------------------------
 /// @return conj( x ). For non-complex types, returns x.
-template <typename T, typename = std::enable_if_t< std::is_arithmetic_t<T> > >
+template <typename T, typename = std::enable_if_t< std::is_arithmetic_v<T> > >
 __device__
 inline T conj_device( T x )
 {

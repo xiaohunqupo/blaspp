@@ -90,6 +90,8 @@ void geadd(
     scalar_t beta,  scalar_t*       B, int64_t ldb,
     blas::Queue& queue )
 {
+    using dev_scalar_t = typename device_cast_traits< scalar_t >::type;
+
     blas_error_if( layout != Layout::ColMajor &&
                    layout != Layout::RowMajor );
     blas_error_if( trans != Op::NoTrans &&
@@ -131,22 +133,10 @@ void geadd(
     blas_dev_call( hipSetDevice( queue.device() ) );
 
     // Cast complex types to hipFloatComplex or hipDoubleComplex
-    if constexpr (std::is_same_v<scalar_t, std::complex<float>>) {
-        geadd_kernel<hipFloatComplex><<<blocks, threads, 0, queue.stream()>>>(
-            trans, m, n,
-            *((hipFloatComplex*) &alpha), (hipFloatComplex*) A, lda,
-            *((hipFloatComplex*) &beta),  (hipFloatComplex*) B, ldb );
-    }
-    else if constexpr (std::is_same_v<scalar_t, std::complex<double>>) {
-        geadd_kernel<hipDoubleComplex><<<blocks, threads, 0, queue.stream()>>>(
-            trans, m, n,
-            *((hipDoubleComplex*) &alpha), (hipDoubleComplex*) A, lda,
-            *((hipDoubleComplex*) &beta),  (hipDoubleComplex*) B, ldb );
-    }
-    else {
-        geadd_kernel<<<blocks, threads, 0, queue.stream()>>> (
-            trans, m, n, alpha, A, lda, beta, B, ldb );
-    }
+    geadd_kernel<<<blocks, threads, 0, queue.stream()>>>(
+        trans, m, n,
+        *((dev_scalar_t*) &alpha), (dev_scalar_t*) A, lda,
+        *((dev_scalar_t*) &beta),  (dev_scalar_t*) B, ldb );
 
     blas_dev_call( hipGetLastError() );
 }

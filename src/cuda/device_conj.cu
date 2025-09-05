@@ -50,6 +50,8 @@ void conj(
     scalar_t*       y, int64_t incy,
     blas::Queue& queue )
 {
+    using dev_scalar_t = typename device_cast_traits< scalar_t >::type;
+
     blas_error_if( n < 0 );
     blas_error_if( incx == 0 );
     blas_error_if( incy == 0 );
@@ -67,18 +69,9 @@ void conj(
 
     blas_dev_call( cudaSetDevice( queue.device() ) );
 
-    if constexpr (std::is_same_v<scalar_t, std::complex<float>>) {
-        conj_kernel<cuComplex><<<n_blocks, n_threads, 0, queue.stream()>>>(
-            n, (cuComplex*) x, incx, ix, (cuComplex*) y, incy, iy );
-    }
-    else if constexpr (std::is_same_v<scalar_t, std::complex<double>>) {
-        conj_kernel<cuDoubleComplex><<<n_blocks, n_threads, 0, queue.stream()>>>(
-            n, (cuDoubleComplex*) x, incx, ix, (cuDoubleComplex*) y, incy, iy );
-    }
-    else {
+    // Cast complex types to cuFloatComplex or cuDoubleComplex.
     conj_kernel<<<n_blocks, n_threads, 0, queue.stream()>>>(
-        n, x, incx, ix, y, incy, iy );
-    }
+        n, (dev_scalar_t*) x, incx, ix, (dev_scalar_t*) y, incy, iy );
 
     blas_dev_call( cudaGetLastError() );
 }

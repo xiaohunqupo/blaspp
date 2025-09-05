@@ -50,6 +50,8 @@ void conj(
     scalar_t*       y, int64_t incy,
     blas::Queue& queue )
 {
+    using dev_scalar_t = typename device_cast_traits< scalar_t >::type;
+
     blas_error_if( n < 0 );
     blas_error_if( incx == 0 );
     blas_error_if( incy == 0 );
@@ -67,18 +69,9 @@ void conj(
 
     blas_dev_call( hipSetDevice( queue.device() ) );
 
-    if constexpr (std::is_same_v<scalar_t, std::complex<float>>) {
-        conj_kernel<hipComplex><<<n_blocks, n_threads, 0, queue.stream()>>>(
-            n, (hipComplex*) x, incx, ix, (hipComplex*) y, incy, iy );
-    }
-    else if constexpr (std::is_same_v<scalar_t, std::complex<double>>) {
-        conj_kernel<hipDoubleComplex><<<n_blocks, n_threads, 0, queue.stream()>>>(
-            n, (hipDoubleComplex*) x, incx, ix, (hipDoubleComplex*) y, incy, iy );
-    }
-    else {
+    // Cast complex types to hipFloatComplex or hipDoubleComplex.
     conj_kernel<<<n_blocks, n_threads, 0, queue.stream()>>>(
-        n, x, incx, ix, y, incy, iy );
-    }
+        n, (dev_scalar_t*) x, incx, ix, (dev_scalar_t*) y, incy, iy );
 
     blas_dev_call( hipGetLastError() );
 }

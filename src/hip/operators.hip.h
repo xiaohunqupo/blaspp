@@ -8,7 +8,35 @@
 
 #include "blas/device.hh"
 
+#include <type_traits>
+
 namespace blas {
+
+//------------------------------------------------------------------------------
+/// Map C++ type to HIP type, e.g.:
+///     device_cast_traits< double               >::type == double
+///     device_cast_traits< std::complex<double> >::type == hipDoubleComplex
+///
+template <typename T>
+struct device_cast_traits
+{
+    using type = T;
+};
+
+// hipComplex and hipFloatComplex are aliases.
+// Use hipblasComplex. hipblasFloatComplex doesn't exist.
+// Use rocblas_float_complex. rocblas_complex doesn't exist.
+template <>
+struct device_cast_traits< std::complex<float> >
+{
+    using type = hipFloatComplex;
+};
+
+template <>
+struct device_cast_traits< std::complex<double> >
+{
+    using type = hipDoubleComplex;
+};
 
 //------------------------------------------------------------------------------
 /// @return max( x, y )
@@ -28,7 +56,7 @@ inline int64_t min_device( int64_t x, int64_t y )
 
 //------------------------------------------------------------------------------
 /// @return conj( x ). For non-complex types, returns x.
-template <typename T, typename = std::enable_if_t< std::is_arithmetic_t<T> > >
+template <typename T, typename = std::enable_if_t< std::is_arithmetic_v<T> > >
 __device__
 inline T conj_device( T x )
 {
