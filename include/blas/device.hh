@@ -733,9 +733,6 @@ void conj(
     scalar_t*       y, int64_t incy,
     blas::Queue& queue )
 {
-    using blas::conj;
-    using std::max, std::min;
-
     blas_error_if( n < 0 );
     blas_error_if( incx == 0 );
     blas_error_if( incy == 0 );
@@ -791,9 +788,6 @@ void geadd(
     scalar_t beta,  scalar_t*       B, int64_t ldb,
     blas::Queue& queue )
 {
-    using blas::conj;
-    using blas::max, blas::min;
-
     blas_error_if( layout != Layout::ColMajor &&
                    layout != Layout::RowMajor );
     blas_error_if( trans != Op::NoTrans &&
@@ -892,9 +886,6 @@ void tzadd(
     scalar_t beta,  scalar_t*       B, int64_t ldb,
     blas::Queue& queue )
 {
-    using blas::conj;
-    using blas::max, blas::min;
-
     blas_error_if( layout != Layout::ColMajor &&
                    layout != Layout::RowMajor );
     blas_error_if( uplo != Uplo::Lower &&
