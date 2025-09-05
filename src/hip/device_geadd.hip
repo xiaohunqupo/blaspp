@@ -24,7 +24,6 @@ __global__ void geadd_kernel(
             case Op::NoTrans:   A_op = A[ i + j*lda ]; break;
             case Op::Trans:     A_op = A[ j + i*lda ]; break;
             case Op::ConjTrans: A_op = conj_device( A[ j + i*lda ] ); break;
-            default: return; // Invalid operation
         }
         B[ i + j*ldb ] = beta * B[ i + j*ldb ] + alpha * A_op;
     }

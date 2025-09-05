@@ -31,12 +31,11 @@ void cpu_tzadd(
         int64_t j_lower = (uplo == Uplo::Lower ? 0 : max( 0, i - max( 0, m - n ) ));
         int64_t j_upper = (uplo == Uplo::Upper ? n : min( n, i + 1 ));
         for (int64_t j = j_lower; j < j_upper; ++j) {
-            scalar_t A_op;
+            scalar_t A_op = 0;
             switch (trans) {
                 case Op::NoTrans:   A_op = A[ i + j*lda ]; break;
                 case Op::Trans:     A_op = A[ j + i*lda ]; break;
                 case Op::ConjTrans: A_op = conj( A[ j + i*lda ] ); break;
-                default: return;
             }
             B[ i + j*ldb ] = beta * B[ i + j*ldb ] + alpha * A_op;
         }

@@ -832,12 +832,11 @@ void geadd(
             int64_t j = item.get_global_id(1);
 
             if (i < m && j < n) {
-                scalar_t A_op;
+                scalar_t A_op = 0;
                 switch (trans) {
                     case Op::NoTrans:   A_op = A[ i + j*lda ]; break;
                     case Op::Trans:     A_op = A[ j + i*lda ]; break;
                     case Op::ConjTrans: A_op = conj( A[ j + i*lda ] ); break;
-                    default: return; // Invalid operation
                 }
                 B[ i + j*ldb ] = beta * B[ i + j*ldb ] + alpha * A_op;
             }
@@ -935,12 +934,11 @@ void tzadd(
             int64_t j_upper = (uplo == Uplo::Upper ? n : min( n, i + 1 ));
 
             if (i < m && j >= j_lower && j < j_upper) {
-                scalar_t A_op;
+                scalar_t A_op = 0;
                 switch (trans) {
                     case Op::NoTrans:   A_op = A[ i + j*lda ]; break;
                     case Op::Trans:     A_op = A[ j + i*lda ]; break;
                     case Op::ConjTrans: A_op = conj( A[ j + i*lda ] ); break;
-                    default: return; // Invalid operation
                 }
                 B[ i + j*ldb ] = beta * B[ i + j*ldb ] + alpha * A_op;
             }
