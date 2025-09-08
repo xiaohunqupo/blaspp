@@ -70,6 +70,7 @@ enum Section {
     device_blas2,
     device_blas3,
     aux,
+    device_aux,
     num_sections,  // last
 };
 
@@ -82,6 +83,7 @@ const char* section_names[] = {
    "Level 2 BLAS (Device)",
    "Level 3 BLAS (Device)",
    "auxiliary",
+   "auxiliary (Device)",
 };
 
 // { "", nullptr, Section::newline } entries force newline in help
@@ -245,6 +247,12 @@ std::vector< testsweeper::routines_t > routines = {
     { "memcpy_2d",        test_memcpy_2d,           Section::aux            },
     { "copy_matrix",      test_memcpy_2d,           Section::aux            },
     { "set_matrix",       test_memcpy_2d,           Section::aux            },
+    { "",                 nullptr,                  Section::newline        },
+
+    // device auxiliary
+    { "dev-conj",         test_conj_device,         Section::device_aux     },
+    { "dev-geadd",        test_geadd_device,        Section::device_aux     },
+    { "dev-tzadd",        test_tzadd_device,        Section::device_aux     },
     { "",                 nullptr,                  Section::newline        },
 };
 

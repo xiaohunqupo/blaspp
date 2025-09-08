@@ -166,7 +166,7 @@ endif
 ${lib_obj} ${tester_obj}: | ${testsweeper}
 
 #-------------------------------------------------------------------------------
-# Get Mercurial id, and make version.o depend on it via .id file.
+# Look up git commit id, and make version.o depend on it via .id file.
 
 ifneq (${wildcard .git},)
     id := ${shell git rev-parse --short HEAD}
@@ -296,7 +296,8 @@ check: tester
 #-------------------------------------------------------------------------------
 # headers
 # precompile headers to verify self-sufficiency
-headers     = ${wildcard include/blas.hh include/blas/*.h include/blas/*.hh test/*.hh}
+headers     = ${wildcard include/blas.hh include/blas/*.h include/blas/*.hh \
+                         test/*.hh src/*.h src/*.hh src/cuda/*.cuh src/hip/*.h}
 headers_gch = ${addsuffix .gch, ${basename ${headers}}}
 
 headers: ${headers_gch}

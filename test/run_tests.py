@@ -73,6 +73,7 @@ categories = [
     group_cat.add_argument( '--aux', action='store_true', help='run auxiliary routines' ),
 
     group_cat.add_argument( '--device', action='store_true', help='run all GPU device routines' ),
+    group_cat.add_argument( '--aux-device', action='store_true', help='run auxiliary routines on devices (GPUs)' ),
 ]
 # map category objects to category names: ['lu', 'chol', ...]
 categories = list( map( lambda x: x.dest, categories ) )
@@ -414,6 +415,13 @@ if (opts.aux):
     [ 'memcpy_2d',   dtype + mn + align ],
     [ 'copy_matrix', dtype + mn + align ],
     [ 'set_matrix',  dtype + mn + align ],
+    ]
+
+if (opts.aux_device):
+    cmds += [
+    [ 'dev-conj',       dtype + n + incx + incy ],
+    [ 'dev-geadd',      dtype + layout + align + trans + mn ],
+    [ 'dev-tzadd',      dtype + layout + align + uplo + trans + mn ],
     ]
 
 # ------------------------------------------------------------------------------

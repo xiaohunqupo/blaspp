@@ -294,4 +294,10 @@ void test_util  ( Params& params, bool run );
 void test_memcpy( Params& params, bool run );
 void test_memcpy_2d( Params& params, bool run );
 
+//------------------------------------------------------------------------------
+// device auxiliary
+void test_conj_device     ( Params& params, bool run );
+void test_geadd_device    ( Params& params, bool run );
+void test_tzadd_device    ( Params& params, bool run );
+
 #endif        //  #ifndef TEST_HH
